@@ -5,31 +5,35 @@ import { createRoot } from "react-dom/client";
 import "./assets/variables.css";
 import "./assets/fonts.css";
 
-import { ObcAzimuthThruster } from "@oicl/openbridge-webcomponents-react/navigation-instruments/azimuth-thruster/azimuth-thruster";
 import { InstrumentState } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/types";
 
-// Import data simulator
-import { generateThrusterData } from "./services/dataSimulator";
+// Import instrument components
+import { AzimuthThrusterPanel, getAzimuthThrusterSettings, THRUSTER_TOPICS } from "./components/AzimuthThrusterPanel";
+import { MainEnginePanel, getMainEngineSettings, ENGINE_TOPICS } from "./components/MainEnginePanel";
 
 function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactElement {
     const [renderDone, setRenderDone] = useState<(() => void) | undefined>();
 
-    // State for thruster data
-    const [thrusterAngle, setThrusterAngle] = useState<number>(0);
-    const [thrusterThrust, setThrusterThrust] = useState<number>(0);
-
     const [demoMode, setDemoMode] = useState<boolean>(true);
     const [lastMessageTime, setLastMessageTime] = useState<number>(Date.now());
 
+    // General settings
+    const [theme, setTheme] = useState<string>("day");
+
     // Settings state
-    const [width, setWidth] = useState<number>(512);
+    const [thrusterWidth, setThrusterWidth] = useState<number>(500);
+    const [thrusterState, setThrusterState] = useState<InstrumentState>(InstrumentState.inCommand);
+    const [engineWidth, setEngineWidth] = useState<number>(500);
+    const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
 
-    // Calculate height based on width (1:1 aspect ratio)
-    const height = width;
+    // Callback for when instruments receive data
+    const handleDataReceived = () => {
+        setLastMessageTime(Date.now());
+        setDemoMode(false);
+    };
 
-    // Demo mode simulation
+    // Demo mode simulation - check if we haven't received messages in 2 seconds
     useEffect(() => {
-        // Check if we haven't received messages in 2 seconds, enable demo mode
         const checkInterval = setInterval(() => {
             if (Date.now() - lastMessageTime > 2000) {
                 setDemoMode(true);
@@ -39,20 +43,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         return () => clearInterval(checkInterval);
     }, [lastMessageTime]);
 
-    // Generate simulated data in demo mode
-    useEffect(() => {
-        if (!demoMode) return;
-
-        const interval = setInterval(() => {
-            const data = generateThrusterData();
-            setThrusterAngle(data.angle);
-            setThrusterThrust(data.thrust);
-        }, 100); // 10Hz update rate
-
-        return () => clearInterval(interval);
-    }, [demoMode]);
-
-    // We use a layout effect to setup render handling for our panel. We also setup some topic subscriptions.
+    // Setup render handling and topic subscriptions
     useLayoutEffect(() => {
         // The render handler is run by the broader Foxglove system during playback when your panel
         // needs to render because the fields it is watching have changed. How you handle rendering depends on your framework.
@@ -69,31 +60,12 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
             // Set the done callback into a state variable to trigger a re-render.
             setRenderDone(() => done);
 
-            if (renderState.currentFrame && renderState.currentFrame.length > 0) {
-                setLastMessageTime(Date.now());
-                setDemoMode(false); // Disable demo mode when receiving real data
-
-                for (const msgEvent of renderState.currentFrame) {
-                    const msg = msgEvent.message as any;
-
-                    // Handle thruster angle topic
-                    if (msgEvent.topic === "/maritime/thruster/angle") {
-                        if (typeof msg.data === "number") {
-                            setThrusterAngle(msg.data);
-                        } else if (typeof msg.angle === "number") {
-                            setThrusterAngle(msg.angle);
-                        }
-                    }
-
-                    // Handle thruster thrust topic
-                    if (msgEvent.topic === "/maritime/thruster/thrust") {
-                        if (typeof msg.data === "number") {
-                            setThrusterThrust(msg.data);
-                        } else if (typeof msg.thrust === "number") {
-                            setThrusterThrust(msg.thrust);
-                        }
-                    }
-                }
+            // Call message handlers from both instrument components
+            if ((context as any)._thrusterMessageHandler) {
+                (context as any)._thrusterMessageHandler(renderState);
+            }
+            if ((context as any)._engineMessageHandler) {
+                (context as any)._engineMessageHandler(renderState);
             }
         };
 
@@ -107,13 +79,17 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         // This corresponds to the _currentFrame_ field of render state.
         context.watch("currentFrame");
 
-        // subscribe to some topics, you could do this within other effects, based on input fields, etc
-        // Once you subscribe to topics, currentFrame will contain message events from those topics (assuming there are messages).
-        context.subscribe([{ topic: "/maritime/thruster/angle" }, { topic: "/maritime/thruster/thrust" }]);
+        // Subscribe to all topics from instruments
+        const allTopics = [...THRUSTER_TOPICS, ...ENGINE_TOPICS].map((topic) => ({ topic }));
+        context.subscribe(allTopics);
 
         // Load saved settings from panel state
         context.saveState({});
-        setWidth((context.initialState as any)?.width ?? 512);
+        setTheme((context.initialState as any)?.theme ?? "day");
+        setThrusterWidth((context.initialState as any)?.thrusterWidth ?? 500);
+        setThrusterState((context.initialState as any)?.thrusterState ?? InstrumentState.inCommand);
+        setEngineWidth((context.initialState as any)?.engineWidth ?? 500);
+        setEngineState((context.initialState as any)?.engineState ?? InstrumentState.inCommand);
     }, [context]);
 
     // Set up and update settings tree
@@ -128,33 +104,53 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                         const nodeName = path[0];
                         const fieldName = path[1];
 
-                        if (nodeName === "azimuthThruster") {
+                        if (nodeName === "general") {
+                            if (fieldName === "theme") {
+                                setTheme(value as string);
+                                context.saveState({ theme: value, thrusterWidth, thrusterState, engineWidth, engineState });
+                            }
+                        } else if (nodeName === "azimuthThruster") {
                             if (fieldName === "width") {
-                                setWidth(value as number);
-                                context.saveState({ width: value });
+                                setThrusterWidth(value as number);
+                                context.saveState({ theme, thrusterWidth: value, thrusterState, engineWidth, engineState });
+                            } else if (fieldName === "state") {
+                                setThrusterState(value as InstrumentState);
+                                context.saveState({ theme, thrusterWidth, thrusterState: value, engineWidth, engineState });
+                            }
+                        } else if (nodeName === "mainEngine") {
+                            if (fieldName === "width") {
+                                setEngineWidth(value as number);
+                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth: value, engineState });
+                            } else if (fieldName === "state") {
+                                setEngineState(value as InstrumentState);
+                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState: value });
                             }
                         }
                     }
                 }
             },
             nodes: {
-                azimuthThruster: {
-                    label: "Azimuth Thruster",
+                general: {
+                    label: "General",
                     fields: {
-                        width: {
-                            label: "Size (px)",
-                            input: "number",
-                            value: width,
-                            step: 25,
-                            min: 32,
-                            max: 1028,
-                            help: "Width and height of the component (maintains 1:1 aspect ratio)",
+                        theme: {
+                            label: "Theme",
+                            input: "select" as const,
+                            value: theme,
+                            options: [
+                                { label: "Day", value: "day" },
+                                { label: "Dusk", value: "dusk" },
+                                { label: "Night", value: "night" },
+                                { label: "Bright", value: "bright" },
+                            ],
                         },
                     },
                 },
+                azimuthThruster: getAzimuthThrusterSettings(thrusterWidth, thrusterState),
+                mainEngine: getMainEngineSettings(engineWidth, engineState),
             },
         });
-    }, [context, width]);
+    }, [context, theme, thrusterWidth, thrusterState, engineWidth, engineState]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
@@ -162,14 +158,23 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     }, [renderDone]);
 
     return (
-        <div style={{ padding: "1rem" }} data-obc-theme="day" className={`obc-component-size-regular`}>
+        <div style={{ padding: "1rem", height: "100%", overflow: "auto", boxSizing: "border-box" }} data-obc-theme={theme} className="obc-component-size-regular">
             <h2>Foxglove Extension with OpenBridge Components!</h2>
-            <div className="wrapper" style={{ width: `${width}px`, height: `${height}px` }}>
-                <ObcAzimuthThruster
-                    angle={thrusterAngle}
-                    thrust={thrusterThrust}
-                    state={InstrumentState.inCommand}>
-                </ObcAzimuthThruster>
+            <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
+                <AzimuthThrusterPanel
+                    context={context}
+                    width={thrusterWidth}
+                    state={thrusterState}
+                    demoMode={demoMode}
+                    onDataReceived={handleDataReceived}
+                />
+                <MainEnginePanel
+                    context={context}
+                    width={engineWidth}
+                    state={engineState}
+                    demoMode={demoMode}
+                    onDataReceived={handleDataReceived}
+                />
             </div>
         </div>
     );
