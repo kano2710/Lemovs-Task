@@ -6,6 +6,7 @@ import "./assets/variables.css";
 import "./assets/fonts.css";
 
 import { InstrumentState } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/types";
+import { PropellerType } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/thruster/propeller";
 
 // Import instrument components
 import { AzimuthThrusterPanel, getAzimuthThrusterSettings, THRUSTER_TOPICS } from "./components/AzimuthThrusterPanel";
@@ -24,8 +25,13 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     // Settings state
     const [thrusterWidth, setThrusterWidth] = useState<number>(500);
     const [thrusterState, setThrusterState] = useState<InstrumentState>(InstrumentState.inCommand);
+    const [thrusterSingleDirection, setThrusterSingleDirection] = useState<boolean>(false);
+    const [thrusterTopPropeller, setThrusterTopPropeller] = useState<PropellerType>(PropellerType.none);
+    const [thrusterBottomPropeller, setThrusterBottomPropeller] = useState<PropellerType>(PropellerType.none);
+
     const [engineWidth, setEngineWidth] = useState<number>(500);
     const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
+
     const [compassWidth, setCompassWidth] = useState<number>(500);
 
     // Callback for when instruments receive data
@@ -91,10 +97,16 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         // Load saved settings from panel state
         context.saveState({});
         setTheme((context.initialState as any)?.theme ?? "day");
+
         setThrusterWidth((context.initialState as any)?.thrusterWidth ?? 500);
         setThrusterState((context.initialState as any)?.thrusterState ?? InstrumentState.inCommand);
+        setThrusterSingleDirection((context.initialState as any)?.thrusterSingleDirection ?? false);
+        setThrusterTopPropeller((context.initialState as any)?.thrusterTopPropeller ?? PropellerType.none);
+        setThrusterBottomPropeller((context.initialState as any)?.thrusterBottomPropeller ?? PropellerType.none);
+
         setEngineWidth((context.initialState as any)?.engineWidth ?? 500);
         setEngineState((context.initialState as any)?.engineState ?? InstrumentState.inCommand);
+
         setCompassWidth((context.initialState as any)?.compassWidth ?? 500);
     }, [context]);
 
@@ -113,28 +125,72 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                         if (nodeName === "general") {
                             if (fieldName === "theme") {
                                 setTheme(value as string);
-                                context.saveState({ theme: value, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth });
+                                context.saveState({
+                                    theme: value,
+                                    thrusterWidth,
+                                    thrusterState,
+                                    thrusterSingleDirection,
+                                    thrusterTopPropeller,
+                                    thrusterBottomPropeller,
+                                    engineWidth,
+                                    engineState,
+                                    compassWidth
+                                });
                             }
                         } else if (nodeName === "azimuthThruster") {
                             if (fieldName === "width") {
                                 setThrusterWidth(value as number);
-                                context.saveState({ theme, thrusterWidth: value, thrusterState, engineWidth, engineState, compassWidth });
                             } else if (fieldName === "state") {
                                 setThrusterState(value as InstrumentState);
-                                context.saveState({ theme, thrusterWidth, thrusterState: value, engineWidth, engineState, compassWidth });
+                            } else if (fieldName === "singleDirection") {
+                                setThrusterSingleDirection(value as boolean);
+                            } else if (fieldName === "topPropeller") {
+                                setThrusterTopPropeller(value as PropellerType);
+                            } else if (fieldName === "bottomPropeller") {
+                                setThrusterBottomPropeller(value as PropellerType);
                             }
+                            context.saveState({
+                                theme,
+                                thrusterWidth,
+                                thrusterState,
+                                thrusterSingleDirection,
+                                thrusterTopPropeller,
+                                thrusterBottomPropeller,
+                                engineWidth,
+                                engineState,
+                                compassWidth
+                            });
                         } else if (nodeName === "mainEngine") {
                             if (fieldName === "width") {
                                 setEngineWidth(value as number);
-                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth: value, engineState, compassWidth });
                             } else if (fieldName === "state") {
                                 setEngineState(value as InstrumentState);
-                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState: value, compassWidth });
                             }
+                            context.saveState({
+                                theme,
+                                thrusterWidth,
+                                thrusterState,
+                                thrusterSingleDirection,
+                                thrusterTopPropeller,
+                                thrusterBottomPropeller,
+                                engineWidth,
+                                engineState,
+                                compassWidth
+                            });
                         } else if (nodeName === "compass") {
                             if (fieldName === "width") {
                                 setCompassWidth(value as number);
-                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth: value });
+                                context.saveState({
+                                    theme,
+                                    thrusterWidth,
+                                    thrusterState,
+                                    thrusterSingleDirection,
+                                    thrusterTopPropeller,
+                                    thrusterBottomPropeller,
+                                    engineWidth,
+                                    engineState,
+                                    compassWidth
+                                });
                             }
                         }
                     }
@@ -157,12 +213,18 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                         },
                     },
                 },
-                azimuthThruster: getAzimuthThrusterSettings(thrusterWidth, thrusterState),
+                azimuthThruster: getAzimuthThrusterSettings(
+                    thrusterWidth,
+                    thrusterState,
+                    thrusterSingleDirection,
+                    thrusterTopPropeller,
+                    thrusterBottomPropeller
+                ),
                 mainEngine: getMainEngineSettings(engineWidth, engineState),
                 compass: getCompassSettings(compassWidth),
             },
         });
-    }, [context, theme, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth]);
+    }, [context, theme, thrusterWidth, thrusterState, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, engineWidth, engineState, compassWidth]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
@@ -177,6 +239,9 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                     context={context}
                     width={thrusterWidth}
                     state={thrusterState}
+                    singleDirection={thrusterSingleDirection}
+                    topPropeller={thrusterTopPropeller}
+                    bottomPropeller={thrusterBottomPropeller}
                     demoMode={demoMode}
                     onDataReceived={handleDataReceived}
                 />
