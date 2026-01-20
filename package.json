@@ -1,10 +1,10 @@
 {
-  "name": "Lemovs-Task",
+  "name": "lemovs-task",
   "displayName": "Lemovs-Task",
-  "description": "",
-  "publisher": "unknown",
+  "description": "Software Web Development Challenge — Foxglove Extension with OpenBridge Components",
+  "publisher": "Dharam",
   "homepage": "",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "UNLICENSED",
   "main": "./dist/extension.js",
   "keywords": [],
@@ -15,7 +15,7 @@
     "lint:ci": "eslint .",
     "lint:fix": "eslint --fix .",
     "local-install": "foxglove-extension install",
-    "package": "foxglove-extension package",
+    "package": "mkdir -p packages && foxglove-extension package --out packages/dharam.lemovs-task-$npm_package_version.foxe",
     "pretest": "foxglove-extension pretest"
   },
   "devDependencies": {
@@ -29,5 +29,10 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@oicl/openbridge-webcomponents-react": "^0.0.17",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0"
   }
 }
