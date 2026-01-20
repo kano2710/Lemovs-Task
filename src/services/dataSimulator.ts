@@ -28,12 +28,12 @@ export interface CompassData {
 export function generateThrusterData(): ThrusterData {
     const time = Date.now() / 1000;
 
-    // Oscillate angle between -45 and 45 degrees
-    const angle = Math.sin(time * 0.5) * 45;
+    // Oscillate angle between -70 and 70 degrees
+    const angle = Math.sin(time * 0.5) * 70;
     const angleSetpoint = 10;
 
-    // Oscillate thrust between 0 and 80%
-    const thrust = (Math.sin(time * 0.3) + 1) * 40;
+    // Oscillate thrust between -80 and 80%
+    const thrust = (Math.sin(time * 0.3)) * 80;
     const thrustSetpoint = 70;
 
     return { angle, angleSetpoint, thrust, thrustSetpoint };

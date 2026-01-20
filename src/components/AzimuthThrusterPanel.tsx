@@ -3,6 +3,8 @@ import { ReactElement, useState, useCallback } from "react";
 import { ObcAzimuthThruster } from "@oicl/openbridge-webcomponents-react/navigation-instruments/azimuth-thruster/azimuth-thruster";
 import { InstrumentState } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/types";
 import { PropellerType } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/thruster/propeller";
+import { AngleAdvice } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/watch/advice";
+import { LinearAdvice } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/thruster/advice";
 import { generateThrusterData } from "../services/dataSimulator";
 import { useInstrumentData } from "../hooks/useInstrumentData";
 import { createInstrumentSettings } from "../utils/settingsHelpers";
@@ -23,6 +25,8 @@ interface AzimuthThrusterPanelProps {
     singleDirection?: boolean;
     topPropeller?: PropellerType;
     bottomPropeller?: PropellerType;
+    angleAdvices?: AngleAdvice[];
+    thrustAdvices?: LinearAdvice[];
 }
 
 export function AzimuthThrusterPanel({
@@ -34,6 +38,8 @@ export function AzimuthThrusterPanel({
     singleDirection,
     topPropeller,
     bottomPropeller,
+    angleAdvices,
+    thrustAdvices,
 }: AzimuthThrusterPanelProps): ReactElement {
     // State for thruster data
     const [angle, setAngle] = useState<number>(0);
@@ -82,7 +88,9 @@ export function AzimuthThrusterPanel({
                     state={state}
                     singleDirection={singleDirection}
                     topPropeller={topPropeller}
-                    bottomPropeller={bottomPropeller}>
+                    bottomPropeller={bottomPropeller}
+                    angleAdvices={angleAdvices}
+                    thrustAdvices={thrustAdvices}>
                 </ObcAzimuthThruster>
             </div>
         </div>
@@ -94,7 +102,9 @@ export function getAzimuthThrusterSettings(
     state: InstrumentState,
     singleDirection: boolean,
     topPropeller: PropellerType,
-    bottomPropeller: PropellerType
+    bottomPropeller: PropellerType,
+    angleAdvicesJson: string,
+    thrustAdvicesJson: string
 ) {
     const baseSettings = createInstrumentSettings("Azimuth Thruster", width, state);
     
@@ -126,6 +136,16 @@ export function getAzimuthThrusterSettings(
                     { label: "Cap", value: PropellerType.cap },
                     { label: "Single", value: PropellerType.single },
                 ],
+            },
+            angleAdvices: {
+                label: "Angle Advices",
+                input: "string" as const,
+                value: angleAdvicesJson,
+            },
+            thrustAdvices: {
+                label: "Thrust Advices",
+                input: "string" as const,
+                value: thrustAdvicesJson,
             },
         },
     };

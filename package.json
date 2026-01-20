@@ -4,7 +4,7 @@
   "description": "Software Web Development Challenge — Foxglove Extension with OpenBridge Components",
   "publisher": "Dharam",
   "homepage": "",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "UNLICENSED",
   "main": "./dist/extension.js",
   "keywords": [],

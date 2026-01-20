@@ -7,6 +7,8 @@ import "./assets/fonts.css";
 
 import { InstrumentState } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/types";
 import { PropellerType } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/thruster/propeller";
+import { AngleAdvice } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/watch/advice";
+import { LinearAdvice } from "@oicl/openbridge-webcomponents/dist/navigation-instruments/thruster/advice";
 
 // Import instrument components
 import { AzimuthThrusterPanel, getAzimuthThrusterSettings, THRUSTER_TOPICS } from "./components/AzimuthThrusterPanel";
@@ -28,6 +30,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     const [thrusterSingleDirection, setThrusterSingleDirection] = useState<boolean>(false);
     const [thrusterTopPropeller, setThrusterTopPropeller] = useState<PropellerType>(PropellerType.none);
     const [thrusterBottomPropeller, setThrusterBottomPropeller] = useState<PropellerType>(PropellerType.none);
+    const [thrusterAngleAdvicesJson, setThrusterAngleAdvicesJson] = useState<string>("[ { \"minAngle\": 20, \"maxAngle\": 50, \"type\": \"advice\", \"hinted\": true }, { \"minAngle\": 60, \"maxAngle\": 100, \"type\": \"caution\", \"hinted\": true } ]");
+    const [thrusterThrustAdvicesJson, setThrusterThrustAdvicesJson] = useState<string>("[ { \"min\": 20, \"max\": 50, \"type\": \"advice\", \"hinted\": true }, { \"min\": 75, \"max\": 100, \"type\": \"caution\", \"hinted\": true }, { \"min\": -100, \"max\": -75, \"type\": \"caution\", \"hinted\": true } ]");
 
     const [engineWidth, setEngineWidth] = useState<number>(500);
     const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
@@ -132,6 +136,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     thrusterSingleDirection,
                                     thrusterTopPropeller,
                                     thrusterBottomPropeller,
+                                    thrusterAngleAdvicesJson,
+                                    thrusterThrustAdvicesJson, 
                                     engineWidth,
                                     engineState,
                                     compassWidth
@@ -148,6 +154,10 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 setThrusterTopPropeller(value as PropellerType);
                             } else if (fieldName === "bottomPropeller") {
                                 setThrusterBottomPropeller(value as PropellerType);
+                            } else if (fieldName === "angleAdvices") {
+                                setThrusterAngleAdvicesJson(value as string);
+                            } else if (fieldName === "thrustAdvices") {
+                                setThrusterThrustAdvicesJson(value as string);
                             }
                             context.saveState({
                                 theme,
@@ -156,6 +166,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 thrusterSingleDirection,
                                 thrusterTopPropeller,
                                 thrusterBottomPropeller,
+                                thrusterAngleAdvicesJson,
+                                thrusterThrustAdvicesJson,
                                 engineWidth,
                                 engineState,
                                 compassWidth
@@ -172,7 +184,9 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 thrusterState,
                                 thrusterSingleDirection,
                                 thrusterTopPropeller,
-                                thrusterBottomPropeller,
+                                thrusterBottomPropeller, 
+                                thrusterAngleAdvicesJson,
+                                thrusterThrustAdvicesJson, 
                                 engineWidth,
                                 engineState,
                                 compassWidth
@@ -186,7 +200,9 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     thrusterState,
                                     thrusterSingleDirection,
                                     thrusterTopPropeller,
-                                    thrusterBottomPropeller,
+                                    thrusterBottomPropeller, 
+                                    thrusterAngleAdvicesJson,
+                                    thrusterThrustAdvicesJson, 
                                     engineWidth,
                                     engineState,
                                     compassWidth
@@ -218,18 +234,36 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                     thrusterState,
                     thrusterSingleDirection,
                     thrusterTopPropeller,
-                    thrusterBottomPropeller
+                    thrusterBottomPropeller,
+                    thrusterAngleAdvicesJson,
+                    thrusterThrustAdvicesJson
                 ),
                 mainEngine: getMainEngineSettings(engineWidth, engineState),
                 compass: getCompassSettings(compassWidth),
             },
         });
-    }, [context, theme, thrusterWidth, thrusterState, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, engineWidth, engineState, compassWidth]);
+    }, [context, theme, thrusterWidth, thrusterState, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, thrusterAngleAdvicesJson, thrusterThrustAdvicesJson, engineWidth, engineState, compassWidth]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
         renderDone?.();
     }, [renderDone]);
+
+    // Parse advice JSON strings
+    let angleAdvices: AngleAdvice[] = [];
+    let thrustAdvices: LinearAdvice[] = [];
+
+    try {
+        angleAdvices = JSON.parse(thrusterAngleAdvicesJson) as AngleAdvice[];
+    } catch (e) {
+        console.error("Failed to parse angle advices JSON:", e);
+    }
+
+    try {
+        thrustAdvices = JSON.parse(thrusterThrustAdvicesJson) as LinearAdvice[];
+    } catch (e) {
+        console.error("Failed to parse thrust advices JSON:", e);
+    }
 
     return (
         <div style={{ padding: "1rem", height: "100%", overflow: "auto", boxSizing: "border-box" }} data-obc-theme={theme} className="obc-component-size-regular">
@@ -242,6 +276,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                     singleDirection={thrusterSingleDirection}
                     topPropeller={thrusterTopPropeller}
                     bottomPropeller={thrusterBottomPropeller}
+                    angleAdvices={angleAdvices}
+                    thrustAdvices={thrustAdvices}
                     demoMode={demoMode}
                     onDataReceived={handleDataReceived}
                 />
