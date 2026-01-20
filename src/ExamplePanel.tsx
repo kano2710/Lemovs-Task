@@ -10,6 +10,7 @@ import { InstrumentState } from "@oicl/openbridge-webcomponents/dist/navigation-
 // Import instrument components
 import { AzimuthThrusterPanel, getAzimuthThrusterSettings, THRUSTER_TOPICS } from "./components/AzimuthThrusterPanel";
 import { MainEnginePanel, getMainEngineSettings, ENGINE_TOPICS } from "./components/MainEnginePanel";
+import { CompassPanel, getCompassSettings, COMPASS_TOPICS } from "./components/CompassPanel";
 
 function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactElement {
     const [renderDone, setRenderDone] = useState<(() => void) | undefined>();
@@ -25,6 +26,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     const [thrusterState, setThrusterState] = useState<InstrumentState>(InstrumentState.inCommand);
     const [engineWidth, setEngineWidth] = useState<number>(500);
     const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
+    const [compassWidth, setCompassWidth] = useState<number>(500);
 
     // Callback for when instruments receive data
     const handleDataReceived = () => {
@@ -60,12 +62,15 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
             // Set the done callback into a state variable to trigger a re-render.
             setRenderDone(() => done);
 
-            // Call message handlers from both instrument components
+            // Call message handlers from instrument components
             if ((context as any)._thrusterMessageHandler) {
                 (context as any)._thrusterMessageHandler(renderState);
             }
             if ((context as any)._engineMessageHandler) {
                 (context as any)._engineMessageHandler(renderState);
+            }
+            if ((context as any)._compassMessageHandler) {
+                (context as any)._compassMessageHandler(renderState);
             }
         };
 
@@ -80,7 +85,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         context.watch("currentFrame");
 
         // Subscribe to all topics from instruments
-        const allTopics = [...THRUSTER_TOPICS, ...ENGINE_TOPICS].map((topic) => ({ topic }));
+        const allTopics = [...THRUSTER_TOPICS, ...ENGINE_TOPICS, ...COMPASS_TOPICS].map((topic) => ({ topic }));
         context.subscribe(allTopics);
 
         // Load saved settings from panel state
@@ -90,6 +95,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         setThrusterState((context.initialState as any)?.thrusterState ?? InstrumentState.inCommand);
         setEngineWidth((context.initialState as any)?.engineWidth ?? 500);
         setEngineState((context.initialState as any)?.engineState ?? InstrumentState.inCommand);
+        setCompassWidth((context.initialState as any)?.compassWidth ?? 500);
     }, [context]);
 
     // Set up and update settings tree
@@ -107,23 +113,28 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                         if (nodeName === "general") {
                             if (fieldName === "theme") {
                                 setTheme(value as string);
-                                context.saveState({ theme: value, thrusterWidth, thrusterState, engineWidth, engineState });
+                                context.saveState({ theme: value, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth });
                             }
                         } else if (nodeName === "azimuthThruster") {
                             if (fieldName === "width") {
                                 setThrusterWidth(value as number);
-                                context.saveState({ theme, thrusterWidth: value, thrusterState, engineWidth, engineState });
+                                context.saveState({ theme, thrusterWidth: value, thrusterState, engineWidth, engineState, compassWidth });
                             } else if (fieldName === "state") {
                                 setThrusterState(value as InstrumentState);
-                                context.saveState({ theme, thrusterWidth, thrusterState: value, engineWidth, engineState });
+                                context.saveState({ theme, thrusterWidth, thrusterState: value, engineWidth, engineState, compassWidth });
                             }
                         } else if (nodeName === "mainEngine") {
                             if (fieldName === "width") {
                                 setEngineWidth(value as number);
-                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth: value, engineState });
+                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth: value, engineState, compassWidth });
                             } else if (fieldName === "state") {
                                 setEngineState(value as InstrumentState);
-                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState: value });
+                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState: value, compassWidth });
+                            }
+                        } else if (nodeName === "compass") {
+                            if (fieldName === "width") {
+                                setCompassWidth(value as number);
+                                context.saveState({ theme, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth: value });
                             }
                         }
                     }
@@ -148,9 +159,10 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                 },
                 azimuthThruster: getAzimuthThrusterSettings(thrusterWidth, thrusterState),
                 mainEngine: getMainEngineSettings(engineWidth, engineState),
+                compass: getCompassSettings(compassWidth),
             },
         });
-    }, [context, theme, thrusterWidth, thrusterState, engineWidth, engineState]);
+    }, [context, theme, thrusterWidth, thrusterState, engineWidth, engineState, compassWidth]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
@@ -172,6 +184,12 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                     context={context}
                     width={engineWidth}
                     state={engineState}
+                    demoMode={demoMode}
+                    onDataReceived={handleDataReceived}
+                />
+                <CompassPanel
+                    context={context}
+                    width={compassWidth}
                     demoMode={demoMode}
                     onDataReceived={handleDataReceived}
                 />

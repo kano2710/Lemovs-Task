@@ -16,6 +16,11 @@ export interface MainEngineData {
     speedSetpoint?: number;
 }
 
+export interface CompassData {
+    heading: number;
+    courseOverGround: number;
+}
+
 /**
  * Generate simulated azimuth thruster data
  * @returns Object containing angle (degrees) and thrust (percentage)
@@ -50,4 +55,18 @@ export function generateMainEngineData(): MainEngineData {
     const speedSetpoint = 40;
 
     return { thrust, thrustSetpoint, speed, speedSetpoint };
+}
+
+/**
+ * Generate simulated compass data
+ * @returns Object containing heading and courseOverGround (degrees)
+ */
+export function generateCompassData(): CompassData {
+    const time = Date.now() / 1000;
+
+    // Slowly rotating heading (0-360 degrees)
+    const heading = (time * 10) % 360;
+    const courseOverGround = 30;
+
+    return { heading, courseOverGround };
 }
