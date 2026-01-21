@@ -28,6 +28,21 @@ export function CompassPanel({
 
     const height = width; // 1:1 aspect ratio
 
+    // Convert degrees to direction
+    const getDirection = (degrees: number): string => {
+        const normalized = ((degrees % 360) + 360) % 360;
+        
+        if (normalized >= 337.5 || normalized < 22.5) return "N";
+        if (normalized >= 22.5 && normalized < 67.5) return "NE";
+        if (normalized >= 67.5 && normalized < 112.5) return "E";
+        if (normalized >= 112.5 && normalized < 157.5) return "SE";
+        if (normalized >= 157.5 && normalized < 202.5) return "S";
+        if (normalized >= 202.5 && normalized < 247.5) return "SW";
+        if (normalized >= 247.5 && normalized < 292.5) return "W";
+        if (normalized >= 292.5 && normalized < 337.5) return "NW";
+        return "N";
+    };
+
     // Demo data generator
     const demoGenerator = useCallback(() => {
         const data = generateCompassData();
@@ -59,6 +74,16 @@ export function CompassPanel({
                     heading={heading}
                     courseOverGround={courseOverGround}>
                 </ObcCompass>
+            </div>
+            <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Heading</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{`${heading.toFixed(1)}° ${getDirection(heading)}`}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Course Over Ground</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{`${courseOverGround.toFixed(1)}° ${getDirection(courseOverGround)}`}</div>
+                </div>
             </div>
         </div>
     );

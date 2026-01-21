@@ -75,6 +75,16 @@ export function MainEnginePanel({
                     state={state}>
                 </ObcMainEngine>
             </div>
+            <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Speed</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{speed.toFixed(0)}nm/h</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Thrust</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{thrust.toFixed(1)}%</div>
+                </div>
+            </div>
         </div>
     );
 }

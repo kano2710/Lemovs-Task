@@ -32,6 +32,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     const [thrusterBottomPropeller, setThrusterBottomPropeller] = useState<PropellerType>(PropellerType.none);
     const [thrusterAngleAdvicesJson, setThrusterAngleAdvicesJson] = useState<string>("[ { \"minAngle\": 20, \"maxAngle\": 50, \"type\": \"advice\", \"hinted\": true }, { \"minAngle\": 60, \"maxAngle\": 100, \"type\": \"caution\", \"hinted\": true } ]");
     const [thrusterThrustAdvicesJson, setThrusterThrustAdvicesJson] = useState<string>("[ { \"min\": 20, \"max\": 50, \"type\": \"advice\", \"hinted\": true }, { \"min\": 75, \"max\": 100, \"type\": \"caution\", \"hinted\": true }, { \"min\": -100, \"max\": -75, \"type\": \"caution\", \"hinted\": true } ]");
+    const [thrusterAngleUnit, setThrusterAngleUnit] = useState<string>("degrees");
 
     const [engineWidth, setEngineWidth] = useState<number>(500);
     const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
@@ -107,6 +108,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         setThrusterSingleDirection((context.initialState as any)?.thrusterSingleDirection ?? false);
         setThrusterTopPropeller((context.initialState as any)?.thrusterTopPropeller ?? PropellerType.none);
         setThrusterBottomPropeller((context.initialState as any)?.thrusterBottomPropeller ?? PropellerType.none);
+        setThrusterAngleUnit((context.initialState as any)?.thrusterAngleUnit ?? "degrees");
 
         setEngineWidth((context.initialState as any)?.engineWidth ?? 500);
         setEngineState((context.initialState as any)?.engineState ?? InstrumentState.inCommand);
@@ -133,6 +135,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     theme: value,
                                     thrusterWidth,
                                     thrusterState,
+                                    thrusterAngleUnit,
                                     thrusterSingleDirection,
                                     thrusterTopPropeller,
                                     thrusterBottomPropeller,
@@ -148,6 +151,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 setThrusterWidth(value as number);
                             } else if (fieldName === "state") {
                                 setThrusterState(value as InstrumentState);
+                            } else if (fieldName === "angleUnit") {
+                                setThrusterAngleUnit(value as string);
                             } else if (fieldName === "singleDirection") {
                                 setThrusterSingleDirection(value as boolean);
                             } else if (fieldName === "topPropeller") {
@@ -163,6 +168,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 theme,
                                 thrusterWidth,
                                 thrusterState,
+                                thrusterAngleUnit,
                                 thrusterSingleDirection,
                                 thrusterTopPropeller,
                                 thrusterBottomPropeller,
@@ -182,6 +188,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 theme,
                                 thrusterWidth,
                                 thrusterState,
+                                thrusterAngleUnit,
                                 thrusterSingleDirection,
                                 thrusterTopPropeller,
                                 thrusterBottomPropeller, 
@@ -198,6 +205,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     theme,
                                     thrusterWidth,
                                     thrusterState,
+                                    thrusterAngleUnit,
                                     thrusterSingleDirection,
                                     thrusterTopPropeller,
                                     thrusterBottomPropeller, 
@@ -205,7 +213,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     thrusterThrustAdvicesJson, 
                                     engineWidth,
                                     engineState,
-                                    compassWidth
+                                    compassWidth: value
                                 });
                             }
                         }
@@ -232,6 +240,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                 azimuthThruster: getAzimuthThrusterSettings(
                     thrusterWidth,
                     thrusterState,
+                    thrusterAngleUnit,
                     thrusterSingleDirection,
                     thrusterTopPropeller,
                     thrusterBottomPropeller,
@@ -242,7 +251,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                 compass: getCompassSettings(compassWidth),
             },
         });
-    }, [context, theme, thrusterWidth, thrusterState, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, thrusterAngleAdvicesJson, thrusterThrustAdvicesJson, engineWidth, engineState, compassWidth]);
+    }, [context, theme, thrusterWidth, thrusterState, thrusterAngleUnit, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, thrusterAngleAdvicesJson, thrusterThrustAdvicesJson, engineWidth, engineState, compassWidth]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
@@ -267,12 +276,25 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
 
     return (
         <div style={{ padding: "1rem", height: "100%", overflow: "auto", boxSizing: "border-box" }} data-obc-theme={theme} className="obc-component-size-regular">
+            {demoMode && (
+                <div style={{
+                    backgroundColor: "#ffa500",
+                    color: "#000",
+                    padding: "0.75rem 1rem",
+                    borderRadius: "4px",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                }}>
+                    DEMO MODE - No ROS topics detected. Displaying simulated data.
+                </div>
+            )}
             <h2>Foxglove Extension with OpenBridge Components!</h2>
             <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
                 <AzimuthThrusterPanel
                     context={context}
                     width={thrusterWidth}
                     state={thrusterState}
+                    angleUnit={thrusterAngleUnit}
                     singleDirection={thrusterSingleDirection}
                     topPropeller={thrusterTopPropeller}
                     bottomPropeller={thrusterBottomPropeller}

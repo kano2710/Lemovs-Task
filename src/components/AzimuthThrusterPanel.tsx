@@ -27,6 +27,7 @@ interface AzimuthThrusterPanelProps {
     bottomPropeller?: PropellerType;
     angleAdvices?: AngleAdvice[];
     thrustAdvices?: LinearAdvice[];
+    angleUnit?: string;
 }
 
 export function AzimuthThrusterPanel({
@@ -40,6 +41,7 @@ export function AzimuthThrusterPanel({
     bottomPropeller,
     angleAdvices,
     thrustAdvices,
+    angleUnit = "degrees",
 }: AzimuthThrusterPanelProps): ReactElement {
     // State for thruster data
     const [angle, setAngle] = useState<number>(0);
@@ -48,6 +50,10 @@ export function AzimuthThrusterPanel({
     const [thrustSetpoint, setThrustSetpoint] = useState<number | undefined>(undefined);
 
     const height = width; // 1:1 aspect ratio
+
+    // Convert degrees to radians if needed
+    const degToRad = (value: number) => angleUnit === "radians" ? (value * (Math.PI / 180)) : value;
+    const displayAngle = degToRad(angle);
 
     // Demo data generator
     const demoGenerator = useCallback(() => {
@@ -93,13 +99,24 @@ export function AzimuthThrusterPanel({
                     thrustAdvices={thrustAdvices}>
                 </ObcAzimuthThruster>
             </div>
+            <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Angle</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{angleUnit === "radians" ? `${displayAngle.toFixed(3)} rad` : `${angle.toFixed(1)}°`}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Thrust</div>
+                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{thrust.toFixed(0)}%</div>
+                </div>
+            </div>
         </div>
     );
 }
 
 export function getAzimuthThrusterSettings(
-    width: number, 
+    width: number,
     state: InstrumentState,
+    angleUnit: string,
     singleDirection: boolean,
     topPropeller: PropellerType,
     bottomPropeller: PropellerType,
@@ -107,11 +124,20 @@ export function getAzimuthThrusterSettings(
     thrustAdvicesJson: string
 ) {
     const baseSettings = createInstrumentSettings("Azimuth Thruster", width, state);
-    
+
     return {
         ...baseSettings,
         fields: {
             ...baseSettings.fields,
+            angleUnit: {
+                label: "Angle Unit",
+                input: "select" as const,
+                value: angleUnit,
+                options: [
+                    { label: "Degrees", value: "degrees" },
+                    { label: "Radians", value: "radians" },
+                ],
+            },
             singleDirection: {
                 label: "Single Direction",
                 input: "boolean" as const,
