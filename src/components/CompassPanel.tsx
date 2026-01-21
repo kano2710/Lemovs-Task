@@ -14,6 +14,7 @@ interface CompassPanelProps {
     width: number;
     demoMode: boolean;
     onDataReceived: () => void;
+    showDirection?: boolean;
 }
 
 export function CompassPanel({
@@ -21,6 +22,7 @@ export function CompassPanel({
     width,
     demoMode,
     onDataReceived,
+    showDirection = true,
 }: CompassPanelProps): ReactElement {
     // State for compass data
     const [heading, setHeading] = useState<number>(0);
@@ -68,7 +70,7 @@ export function CompassPanel({
 
     return (
         <div>
-            <h3>Compass</h3>
+            <h3 style={{textAlign: "center"}}>Compass</h3>
             <div className="wrapper" style={{ width: `${width}px`, height: `${height}px` }}>
                 <ObcCompass
                     heading={heading}
@@ -78,18 +80,18 @@ export function CompassPanel({
             <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Heading</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{`${heading.toFixed(1)}° ${getDirection(heading)}`}</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{showDirection ? `${heading.toFixed(1)}° ${getDirection(heading)}` : `${heading.toFixed(1)}°`}</div>
                 </div>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Course Over Ground</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{`${courseOverGround.toFixed(1)}° ${getDirection(courseOverGround)}`}</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{showDirection ? `${courseOverGround.toFixed(1)}° ${getDirection(courseOverGround)}` : `${courseOverGround.toFixed(1)}°`}</div>
                 </div>
             </div>
         </div>
     );
 }
 
-export function getCompassSettings(width: number) {
+export function getCompassSettings(width: number, showDirection: boolean) {
     return {
         label: "Compass",
         fields: {
@@ -100,6 +102,11 @@ export function getCompassSettings(width: number) {
                 step: 25,
                 min: 32,
                 max: 1028,
+            },
+            showDirection: {
+                label: "Show Direction",
+                input: "boolean" as const,
+                value: showDirection,
             },
         },
     };

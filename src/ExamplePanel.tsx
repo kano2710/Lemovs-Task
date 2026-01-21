@@ -38,6 +38,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
     const [engineState, setEngineState] = useState<InstrumentState>(InstrumentState.inCommand);
 
     const [compassWidth, setCompassWidth] = useState<number>(500);
+    const [compassShowDirection, setCompassShowDirection] = useState<boolean>(true);
 
     // Callback for when instruments receive data
     const handleDataReceived = () => {
@@ -114,6 +115,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
         setEngineState((context.initialState as any)?.engineState ?? InstrumentState.inCommand);
 
         setCompassWidth((context.initialState as any)?.compassWidth ?? 500);
+        setCompassShowDirection((context.initialState as any)?.compassShowDirection ?? true);
     }, [context]);
 
     // Set up and update settings tree
@@ -143,7 +145,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                     thrusterThrustAdvicesJson, 
                                     engineWidth,
                                     engineState,
-                                    compassWidth
+                                    compassWidth,
+                                    compassShowDirection
                                 });
                             }
                         } else if (nodeName === "azimuthThruster") {
@@ -176,7 +179,8 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 thrusterThrustAdvicesJson,
                                 engineWidth,
                                 engineState,
-                                compassWidth
+                                compassWidth,
+                                compassShowDirection
                             });
                         } else if (nodeName === "mainEngine") {
                             if (fieldName === "width") {
@@ -196,26 +200,30 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                                 thrusterThrustAdvicesJson, 
                                 engineWidth,
                                 engineState,
-                                compassWidth
+                                compassWidth,
+                                compassShowDirection
                             });
                         } else if (nodeName === "compass") {
                             if (fieldName === "width") {
                                 setCompassWidth(value as number);
-                                context.saveState({
-                                    theme,
-                                    thrusterWidth,
-                                    thrusterState,
-                                    thrusterAngleUnit,
-                                    thrusterSingleDirection,
-                                    thrusterTopPropeller,
-                                    thrusterBottomPropeller, 
-                                    thrusterAngleAdvicesJson,
-                                    thrusterThrustAdvicesJson, 
-                                    engineWidth,
-                                    engineState,
-                                    compassWidth: value
-                                });
+                            } else if (fieldName === "showDirection") {
+                                setCompassShowDirection(value as boolean);
                             }
+                            context.saveState({
+                                theme,
+                                thrusterWidth,
+                                thrusterState,
+                                thrusterAngleUnit,
+                                thrusterSingleDirection,
+                                thrusterTopPropeller,
+                                thrusterBottomPropeller, 
+                                thrusterAngleAdvicesJson,
+                                thrusterThrustAdvicesJson, 
+                                engineWidth,
+                                engineState,
+                                compassWidth,
+                                compassShowDirection
+                            });
                         }
                     }
                 }
@@ -248,10 +256,10 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                     thrusterThrustAdvicesJson
                 ),
                 mainEngine: getMainEngineSettings(engineWidth, engineState),
-                compass: getCompassSettings(compassWidth),
+                compass: getCompassSettings(compassWidth, compassShowDirection),
             },
         });
-    }, [context, theme, thrusterWidth, thrusterState, thrusterAngleUnit, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, thrusterAngleAdvicesJson, thrusterThrustAdvicesJson, engineWidth, engineState, compassWidth]);
+    }, [context, theme, thrusterWidth, thrusterState, thrusterAngleUnit, thrusterSingleDirection, thrusterTopPropeller, thrusterBottomPropeller, thrusterAngleAdvicesJson, thrusterThrustAdvicesJson, engineWidth, engineState, compassWidth, compassShowDirection]);
 
     // invoke the done callback once the render is complete
     useEffect(() => {
@@ -313,6 +321,7 @@ function ExamplePanel({ context }: { context: PanelExtensionContext }): ReactEle
                 <CompassPanel
                     context={context}
                     width={compassWidth}
+                    showDirection={compassShowDirection}
                     demoMode={demoMode}
                     onDataReceived={handleDataReceived}
                 />

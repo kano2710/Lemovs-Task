@@ -1,39 +1,101 @@
-# Lemovs-Task
 
-[Foxglove](https://foxglove.dev) allows developers to create [extensions](https://docs.foxglove.dev/docs/visualization/extensions/introduction), or custom code that is loaded and executed inside the Foxglove application. This can be used to add custom panels. Extensions are authored in TypeScript using the `@foxglove/extension` SDK.
+# Foxglove Extension with OpenBridge Components
 
-## Develop
+Foxglove panel for maritime navigation with OpenBridge components.
 
-Extension development uses the `npm` package manager to install development dependencies and run build scripts.
+## Instruments
 
-To install extension dependencies, run `npm` from the root of the extension package.
+- Azimuth Thruster
+- Main Engine
+- Compass
 
-```sh
+## Features
+
+- Subscribe to ROS Topics
+- Demo Mode
+- Select Theme (Day, Dusk, Night, Bright)
+- Change Size of Instruments
+
+**Azimuth Thruster:**
+
+- Select State (In Command, Active, Loading, Off)
+- Change Angle Unit (Degrees/Radians)
+- Toggle Single Direction
+- Select Top/Bottom Propeller (None, Cap, Single)
+- Customize Angle/Thrust Advices (JSON)
+
+**Main Engine**
+
+- Select State (In Command, Active, Loading, Off)
+
+**Compass**
+
+- Toggle Show Direction
+## Clone the project
+
+```bash
+git clone git@github.com:kano2710/Lemovs-Task.git
+```
+
+Go to the project directory
+
+```bash
+cd Lemovs-Task
+```
+
+## Prerequisites
+
+- Node.js
+- npm
+- Foxglove Studio
+
+## Run Locally
+
+Install dependencies
+
+```bash
 npm install
 ```
 
-To build and install the extension into your local Foxglove desktop app, run:
+Build for Foxglove Studio and Add to Panels
 
-```sh
+```bash
 npm run local-install
 ```
 
-Open the Foxglove desktop (or `ctrl-R` to refresh if it is already open). Your extension is installed and available within the app.
+Open Foxglove Studio App and Look for **OpenBridge [local]** at Panels.
 
-## Package
+## Package and Add Extension to Foxglove Studio
 
-Extensions are packaged into `.foxe` files. These files contain the metadata (package.json) and the build code for the extension.
+Install dependencies
 
-Before packaging, make sure to set `name`, `publisher`, `version`, and `description` fields in _package.json_. When ready to distribute the extension, run:
+```bash
+npm install
+```
 
-```sh
+Package Extension
+
+```bash
 npm run package
 ```
 
-This command will package the extension into a `.foxe` file in the local directory.
+**_NOTE:_**  Packaged Extension could be found under /packages folder.
 
-## Publish
+Open Foxglove Studio and install extention. The extention will be avaiable to use at panels.
 
-You can publish the extension to the public registry or privately for your organization.
+## Version History
 
-See documentation here: https://docs.foxglove.dev/docs/visualization/extensions/publish/#packaging-your-extension
+[Changelog](./CHANGELOG.md)
+
+## Demo
+
+[Demo Video](https://drive.google.com/file/d/1iNSA32WYxhYrqkULtYmPDte-GmvAhDFp/view?usp=sharing)
+
+## Authors
+
+[@kano2710](https://github.com/kano2710)
+
+## Links
+
+[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://dhameliya.com/)
+[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/dharamdhameliya/)

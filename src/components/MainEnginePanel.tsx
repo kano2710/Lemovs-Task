@@ -65,7 +65,7 @@ export function MainEnginePanel({
 
     return (
         <div>
-            <h3>Main Engine</h3>
+            <h3 style={{textAlign: "center"}}>Main Engine</h3>
             <div className="wrapper" style={{ width: `${width}px`, height: `${height}px` }}>
                 <ObcMainEngine
                     thrust={thrust}
@@ -78,11 +78,11 @@ export function MainEnginePanel({
             <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Speed</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{speed.toFixed(0)}nm/h</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{speed.toFixed(0)}nm/h</div>
                 </div>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Thrust</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{thrust.toFixed(1)}%</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{thrust.toFixed(1)}%</div>
                 </div>
             </div>
         </div>

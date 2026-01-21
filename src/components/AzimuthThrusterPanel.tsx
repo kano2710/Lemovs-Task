@@ -84,7 +84,7 @@ export function AzimuthThrusterPanel({
 
     return (
         <div>
-            <h3>Azimuth Thruster</h3>
+            <h3 style={{textAlign: "center"}}>Azimuth Thruster</h3>
             <div className="wrapper" style={{ width: `${width}px`, height: `${height}px` }}>
                 <ObcAzimuthThruster
                     angle={angle}
@@ -102,11 +102,11 @@ export function AzimuthThrusterPanel({
             <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-around", fontSize: "0.875rem" }}>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Angle</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{angleUnit === "radians" ? `${displayAngle.toFixed(3)} rad` : `${angle.toFixed(1)}°`}</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{angleUnit === "radians" ? `${displayAngle.toFixed(3)} rad` : `${angle.toFixed(1)}°`}</div>
                 </div>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ color: "#94a3b8", marginBottom: "0.25rem" }}>Thrust</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "#94a3b8" }}>{thrust.toFixed(0)}%</div>
+                    <div style={{ fontSize: "1.25rem", color: "#94a3b8" }}>{thrust.toFixed(0)}%</div>
                 </div>
             </div>
         </div>
